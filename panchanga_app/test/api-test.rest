@@ -1,0 +1,10 @@
+
+
+POST http://localhost:8000/panchanga
+
+   {
+  "latitude": 10.1632,
+  "longitude": 76.6413,
+  "local_date": "2025-01-31"
+    }
+ 

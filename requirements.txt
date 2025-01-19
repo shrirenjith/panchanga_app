@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+skyfield
+pydantic
+python-dotenv  # optional, if you want environment variable handling
+timezonefinder
