@@ -9,6 +9,9 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+# Default coordinates for Thrissur, Kerala
+DEFAULT_LATITUDE = 10.5276
+DEFAULT_LONGITUDE = 76.2144
 
 def get_ephemeris_calculator():
     logger.debug("Creating EphemerisCalculator instance")
@@ -27,10 +30,14 @@ def compute_panchanga(
 ):
     logger.debug(f"Received request: {req}")
     try:
+        # Use default coordinates if not provided
+        latitude = req.latitude or DEFAULT_LATITUDE
+        longitude = req.longitude or DEFAULT_LONGITUDE
+
         result = get_panchanga_data(
             calculator=calculator,
-            lat=req.latitude,
-            lon=req.longitude,
+            lat=latitude,
+            lon=longitude,
             local_date=req.local_date
         )
         logger.debug(f"Computed Panchanga data: {result}")

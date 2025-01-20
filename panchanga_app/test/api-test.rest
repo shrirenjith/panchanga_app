@@ -1,10 +1,17 @@
 
 
-POST http://localhost:8000/panchanga
+POST http://localhost:8000/panchanga 
 
    {
-  "latitude": 10.1632,
-  "longitude": 76.6413,
-  "local_date": "2025-01-31"
+  "latitude": 10.5276,
+  "longitude": 76.2144,
+  "local_date": "2025-01-20"
     }
  
+####
+
+POST http://localhost:8000/panchanga 
+
+   {
+   "local_date": "2025-01-20"
+    }

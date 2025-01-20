@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 from ..core.festivals import check_festivals
 from ..core.time_zone_service import get_local_sunrise
-from ..core.lookup_service import get_tithi_name, get_nakshatra_name
+from ..core.nakshatra import get_tithi_name, get_nakshatra_name, calculate_nakshatra_timings
 from ..core.malayalam_calendar import get_malayalam_date
 
 def get_panchanga_data(calculator, lat: float, lon: float, local_date: date):
@@ -43,7 +43,14 @@ def get_panchanga_data(calculator, lat: float, lon: float, local_date: date):
 
         malayalam_date = get_malayalam_date(calculator, sunrise_local, lat, lon)
         logger.debug(f"Malayalam date: {malayalam_date}")
+# Calculate Nakshatra timings
+        nakshatra_timings = calculate_nakshatra_timings(
+            moon_lon=sidereal_positions["moon_longitude"],
+            sunrise_local=sunrise_local,
+            eph_calc=calculator.eph_calc
+        )
 
+        # Get the festivals for the given date
         festivals_today = check_festivals(
             malayalam_date["month_name"], nakshatra_idx, sidereal_positions["sun_longitude"]
         )
@@ -54,7 +61,7 @@ def get_panchanga_data(calculator, lat: float, lon: float, local_date: date):
             "tithi_index": tithi_idx,
             "tithi_name": tithi_name,
             "nakshatra_index": nakshatra_idx,
-            "nakshatra_name": nakshatra_name,
+            "nakshatra":  nakshatra_timings,
             "malayalam_date": {
                 "month_name": malayalam_date["month_name"],
                 "month_day": malayalam_date["month_day"],

@@ -1,6 +1,7 @@
 # panchanga_app/core/festivals.py
 
 from typing import List, Dict
+from .nakshatra import get_nakshatra_name  # Update if needed
 
 FESTIVALS = [
     {

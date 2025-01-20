@@ -1,6 +1,5 @@
-# panchanga_app/core/ayanamsa.py
-
 from datetime import date
+from functools import lru_cache
 
 class AyanamsaCalculator:
     """
@@ -8,6 +7,10 @@ class AyanamsaCalculator:
 
     Supports both regular year-based precision and fractional-year precision.
     """
+
+    SECONDS_IN_A_DEGREE = 3600
+    DAYS_IN_COMMON_YEAR = 365
+    DAYS_IN_LEAP_YEAR = 366
 
     def __init__(self, epoch_year=285, precession_rate=50.3):
         """
@@ -18,6 +21,7 @@ class AyanamsaCalculator:
         self.epoch_year = epoch_year
         self.precession_rate = precession_rate
 
+    @lru_cache(maxsize=128)
     def calculate(self, date_obj, use_fractional=False):
         """
         Calculate the Ayanamsa for the given date.
@@ -25,6 +29,9 @@ class AyanamsaCalculator:
         :param use_fractional: Whether to use fractional-year precision (default: False).
         :return: Ayanamsa in degrees.
         """
+        if date_obj.year < 1582:
+            raise ValueError("The input date must be in the Gregorian calendar (after 1582 CE).")
+
         if use_fractional:
             return self._calculate_fractional(date_obj)
         else:
@@ -33,36 +40,17 @@ class AyanamsaCalculator:
     def _calculate_regular(self, date_obj):
         """
         Calculate Ayanamsa using regular year-based precision.
-        :param date_obj: A datetime.date object.
-        :return: Ayanamsa in degrees.
         """
-        # Number of years since the epoch
         years_since_epoch = date_obj.year - self.epoch_year
-
-        # Precession in arcseconds
         total_precession_arcseconds = years_since_epoch * self.precession_rate
-
-        # Convert arcseconds to degrees
-        return total_precession_arcseconds / 3600
+        return total_precession_arcseconds / self.SECONDS_IN_A_DEGREE
 
     def _calculate_fractional(self, date_obj):
         """
         Calculate Ayanamsa using fractional-year precision.
-        :param date_obj: A datetime.date object.
-        :return: Ayanamsa in degrees.
         """
-        # Days in the year for the given date (account for leap years)
-        days_in_year = 366 if (date_obj.year % 4 == 0 and (date_obj.year % 100 != 0 or date_obj.year % 400 == 0)) else 365
-
-        # Fraction of the year passed
-        day_of_year = date_obj.timetuple().tm_yday
-        fractional_year = date_obj.year + (day_of_year / days_in_year)
-
-        # Years since the epoch
+        days_in_year = self.DAYS_IN_LEAP_YEAR if (date_obj.year % 4 == 0 and (date_obj.year % 100 != 0 or date_obj.year % 400 == 0)) else self.DAYS_IN_COMMON_YEAR
+        fractional_year = date_obj.year + (date_obj.timetuple().tm_yday / days_in_year)
         years_since_epoch = fractional_year - self.epoch_year
-
-        # Precession in arcseconds
         total_precession_arcseconds = years_since_epoch * self.precession_rate
-
-        # Convert arcseconds to degrees
-        return total_precession_arcseconds / 3600
+        return total_precession_arcseconds / self.SECONDS_IN_A_DEGREE

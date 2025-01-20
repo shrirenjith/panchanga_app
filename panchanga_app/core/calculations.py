@@ -1,5 +1,6 @@
 import logging
 from .ayanamsa import AyanamsaCalculator
+from .nakshatra import get_tithi_name, get_nakshatra_name
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class PanchangaCalculator:
         """
         Convert tropical longitude to sidereal longitude using Ayanamsa.
         """
-        ayanamsa = ayanamsa_calculator.calculate(date_obj, use_fractional=False)
+        ayanamsa = ayanamsa_calculator.calculate(date_obj, use_fractional=True)
         sidereal_lon = (tropical_longitude - ayanamsa) % 360
         logger.debug(f"Converted Tropical Longitude {tropical_longitude} to Sidereal {sidereal_lon}")
         return sidereal_lon
