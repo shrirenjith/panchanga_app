@@ -66,14 +66,13 @@ def get_nakshatra_name(nakshatra_idx, language="english"):
 # Function to dynamically calculate Nakshatra timings
 def calculate_nakshatra_timings(moon_lon, sunrise_local, eph_calc):
     """
-    Calculate Nakshatra timings for the given day based on the Moon's longitude.
-    Include Nazhika representation of the duration.
+    Calculate Nakshatra timings for the given day and beyond, based on the Moon's longitude.
     :param moon_lon: Initial Moon sidereal longitude at local sunrise.
     :param sunrise_local: Sunrise time in local time.
     :param eph_calc: Instance of EphemerisCalculator for Moon's motion.
     :return: List of dictionaries with Nakshatra timings and names in local time.
     """
-    logger.debug(f"Calculating daily Nakshatras for Moon longitude: {moon_lon}")
+    logger.debug(f"Calculating Nakshatra timings starting with Moon longitude: {moon_lon}")
 
     nakshatra_degrees = 360.0 / 27.0  # Each Nakshatra spans 13°20'
     moon_daily_motion = 13.1667      # Average Moon motion per day (in degrees)
@@ -82,11 +81,12 @@ def calculate_nakshatra_timings(moon_lon, sunrise_local, eph_calc):
     current_time = sunrise_local
     current_nakshatra_index = int(moon_lon // nakshatra_degrees)
 
-    while current_time < sunrise_local + timedelta(days=1):
-        # Calculate current Nakshatra and its duration
+    while len(results) < 5:  # Arbitrarily calculate the next 5 transitions
+        # Get current Nakshatra names
         current_nakshatra_name_en = NAKSHATRA_NAMES["english"][current_nakshatra_index]
         current_nakshatra_name_ml = NAKSHATRA_NAMES["malayalam"][current_nakshatra_index]
 
+        # Calculate transition to next Nakshatra
         next_nakshatra_start_lon = (current_nakshatra_index + 1) * nakshatra_degrees
         remaining_degrees = (next_nakshatra_start_lon - moon_lon) % 360
         remaining_fraction_of_day = remaining_degrees / moon_daily_motion
@@ -99,11 +99,11 @@ def calculate_nakshatra_timings(moon_lon, sunrise_local, eph_calc):
         # Format Nazhika as a mixed fraction
         whole_nazhika = int(duration_nazhika)
         fractional_nazhika = duration_nazhika - whole_nazhika
-        fractional_part = Fraction(fractional_nazhika).limit_denominator(12)  # Limit to 1/12 (e.g., 1/4, 1/3)
+        fractional_part = Fraction(fractional_nazhika).limit_denominator(12)  # Limit to 1/12
 
         formatted_nazhika = f"{whole_nazhika} {fractional_part}" if fractional_part else f"{whole_nazhika}"
 
-        # Add Nakshatra to results with Nazhika
+        # Append results
         results.append({
             "english": current_nakshatra_name_en,
             "malayalam": current_nakshatra_name_ml,
@@ -112,7 +112,7 @@ def calculate_nakshatra_timings(moon_lon, sunrise_local, eph_calc):
             "nazhika": formatted_nazhika
         })
 
-        # Update to next Nakshatra
+        # Prepare for the next iteration
         current_time = next_nakshatra_time
         moon_lon = next_nakshatra_start_lon % 360
         current_nakshatra_index = (current_nakshatra_index + 1) % 27
